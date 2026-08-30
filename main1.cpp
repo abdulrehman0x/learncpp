@@ -1,16 +1,39 @@
 #include <iostream>
-#include <string>
+#include <cmath>
+
+int main()
+{
+    int number;
+    std::cout << "Enter a number: ";
+    std::cin >> number;
+    int temp = std::abs(number);
+    int count = 0;
+    if(temp == 0){
+        count = count + 1;
+
+    }
+    else{
+        while(temp>1){
+            temp /= 10;
+            count++;
+        }
+    }
+std::cout << "Digit count: " << count<<"\n";
+
+}
+
+
+#include <iostream>
+#include <cmath>
 
 int main(){
-    std::string name;
-    std::cout << "Enter your name: ";
-
-    std::cin >> name;
-
-    std :: cout << "Kaise ho," << name << "?";
-    std::string Cat_Name;
-    std::cout << "Enter your cat name: ";
-    std::cin >> Cat_Name;
-    std::cout << "Your Cat name is" << Cat_Name;
-
+    int num;
+    std::cout << "Enter a number: ";
+    std::cin >> num;
+    if(num%2 == 0){
+        std::cout << "its an even number!!";
+    }
+    else{
+        std::cout << "its an odd number!!";
+    }
 }
