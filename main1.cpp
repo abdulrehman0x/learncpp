@@ -1,39 +1,17 @@
 #include <iostream>
 #include <cmath>
 
-int main()
-{
-    int number;
-    std::cout << "Enter a number: ";
-    std::cin >> number;
-    int temp = std::abs(number);
-    int count = 0;
-    if(temp == 0){
-        count = count + 1;
-
-    }
-    else{
-        while(temp>1){
-            temp /= 10;
-            count++;
-        }
-    }
-std::cout << "Digit count: " << count<<"\n";
-
-}
-
-
-#include <iostream>
-#include <cmath>
-
-int main(){
-    int num;
-    std::cout << "Enter a number: ";
+int main (){
+    float num;
+    std::cout << "Enter a Number: ";
     std::cin >> num;
-    if(num%2 == 0){
-        std::cout << "its an even number!!";
+    if(num > 0){
+        std::cout << "Entered number is positive!! ";
+    }
+    else if (num == 0){
+        std::cout << "Entered number is equal to zero!";
     }
     else{
-        std::cout << "its an odd number!!";
+        std::cout << "Entered number is negative!!";
     }
 }
