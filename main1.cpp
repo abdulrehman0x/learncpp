@@ -14,4 +14,5 @@ int main (){
     else{
         std::cout << "Entered number is negative!!";
     }
+    return 0;
 }
