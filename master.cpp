@@ -30,5 +30,6 @@ int main(){
     else{
         std::cout << "Grade = Ungraded/Failure";
     }
+    return 0;
 
 }
