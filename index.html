@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    <style>
+        /* ===== CSS Variables & Reset ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #131b33;
+            --bg-card: #1a2444;
+            --text-primary: #e8edf5;
+            --text-secondary: #94a3b8;
+            --accent-1: #6c5ce7;
+            --accent-2: #a855f7;
+            --accent-3: #3b82f6;
+            --gradient-1: linear-gradient(135deg, #6c5ce7, #a855f7);
+            --gradient-2: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image:
+                radial-gradient(ellipse at 10% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+        }
+
+        /* ===== Container ===== */
+        .container {
+            width: 100%;
+            max-width: 560px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== Card ===== */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 40px 32px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glow effect */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(108, 92, 231, 0.03), transparent 60%);
+            pointer-events: none;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            font-size: 28px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.3);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 6px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== Output / Terminal ===== */
+        .terminal {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 20px 24px;
+            min-height: 140px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+            scroll-behavior: smooth;
+        }
+
+        .terminal::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .terminal::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .terminal::-webkit-scrollbar-thumb {
+            background: var(--accent-1);
+            border-radius: 10px;
+        }
+
+        .terminal .line {
+            opacity: 0;
+            animation: typeIn 0.15s ease forwards;
+        }
+
+        .terminal .line.prompt {
+            color: var(--accent-2);
+            font-weight: 500;
+        }
+
+        .terminal .line.input {
+            color: var(--warning);
+        }
+
+        .terminal .line.output {
+            color: var(--text-primary);
+        }
+
+        .terminal .line.success {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .terminal .line.grade-aplus { color: #34d399; font-weight: 700; }
+        .terminal .line.grade-a { color: #6ee7b7; font-weight: 600; }
+        .terminal .line.grade-bplus { color: #fbbf24; font-weight: 600; }
+        .terminal .line.grade-b { color: #f59e0b; font-weight: 600; }
+        .terminal .line.grade-fail { color: #f87171; font-weight: 600; }
+
+        .terminal .cursor-blink {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--accent-2);
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes typeIn {
+            from { opacity: 0; transform: translateX(-6px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ===== Input Section ===== */
+        .input-section {
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-group .prefix {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .input-field {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 15px;
+            transition: var(--transition);
+            outline: none;
+            min-width: 0;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+        }
+
+        .input-field:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .btn:hover:not(:disabled)::after {
+            opacity: 1;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== Status Bar ===== */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            transition: var(--transition);
+        }
+
+        .status-dot.idle { background: var(--text-secondary); }
+        .status-dot.running { background: var(--warning); animation: pulse 1.5s ease-in-out infinite; }
+        .status-dot.waiting { background: var(--accent-2); animation: pulse 1s ease-in-out infinite; }
+        .status-dot.done { background: var(--success); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .status-text {
+            display: flex;
+            align-items: center;
+        }
+
+        .reset-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 480px) {
+            .card {
+                padding: 24px 16px 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .input-group .prefix {
+                display: none;
+            }
+
+            .btn {
+                padding: 12px;
+                width: 100%;
+            }
+
+            .terminal {
+                font-size: 13px;
+                padding: 16px;
+                min-height: 120px;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+        }
+
+        /* ===== Loading Shimmer ===== */
+        .shimmer {
+            background: linear-gradient(90deg,
+                var(--bg-primary) 25%,
+                rgba(108, 92, 231, 0.1) 50%,
+                var(--bg-primary) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">🎓</div>
+            <h1>Grade Calculator</h1>
+            <p>Enter your department and marks to calculate your grade</p>
+        </div>
+
+        <!-- Terminal Output -->
+        <div id="terminal" class="terminal">
+            <div class="line output">Welcome to Grade Calculator!</div>
+            <div class="line output">Initializing...</div>
+            <div class="line prompt">$ <span class="cursor-blink"></span></div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="input-group">
+                <span class="prefix">➜</span>
+                <input
+                    type="text"
+                    id="inputField"
+                    class="input-field"
+                    placeholder="Type here..."
+                    autofocus
+                    disabled
+                >
+                <button id="sendBtn" class="btn" disabled>
+                    <span>↵ Enter</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-text">
+                <span class="status-dot idle" id="statusDot"></span>
+                <span id="statusLabel">Initializing...</span>
+            </div>
+            <button id="resetBtn" class="reset-btn">⟳ Restart</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+//  STATE
+// ============================================================
+const state = {
+    stdinBuffer: [],
+    stdinCallback: null,
+    isWaiting: false,
+    programRunning: false,
+    programDone: false,
+    needsRestart: false,
+};
+
+// ============================================================
+//  DOM REFS
+// ============================================================
+const terminal = document.getElementById('terminal');
+const inputField = document.getElementById('inputField');
+const sendBtn = document.getElementById('sendBtn');
+const resetBtn = document.getElementById('resetBtn');
+const statusDot = document.getElementById('statusDot');
+const statusLabel = document.getElementById('statusLabel');
+
+// ============================================================
+//  TERMINAL HELPERS
+// ============================================================
+function terminalWrite(text, className = 'output') {
+    const div = document.createElement('div');
+    div.className = `line ${className}`;
+    div.textContent = text;
+    terminal.appendChild(div);
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+function terminalPrompt() {
+    const div = document.createElement('div');
+    div.className = 'line prompt';
+    div.innerHTML = '$ <span class="cursor-blink"></span>';
+    terminal.appendChild(div);
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+function terminalClear() {
+    terminal.innerHTML = '';
+}
+
+function setStatus(text, type = 'idle') {
+    statusLabel.textContent = text;
+    statusDot.className = `status-dot ${type}`;
+}
+
+// ============================================================
+//  WASM MODULE CONFIG
+// ============================================================
+const Module = {
+    print: function(text) {
+        // Detect grade outputs for styling
+        let className = 'output';
+        if (text.includes('Grade = A+')) className = 'grade-aplus';
+        else if (text.includes('Grade = A')) className = 'grade-a';
+        else if (text.includes('Grade = B+')) className = 'grade-bplus';
+        else if (text.includes('Grade = B')) className = 'grade-b';
+        else if (text.includes('Grade = Ungraded') || text.includes('Failure')) className = 'grade-fail';
+        else if (text.includes('percentage')) className = 'success';
+
+        terminalWrite(text, className);
+    },
+    printErr: function(text) {
+        terminalWrite('[ERROR] ' + text, 'output');
+    },
+    onRuntimeInitialized: function() {
+        setStatus('Ready', 'idle');
+        inputField.disabled = false;
+        sendBtn.disabled = false;
+        inputField.focus();
+
+        terminalWrite('✅ WASM module loaded successfully!', 'success');
+        terminalWrite('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        startProgram();
+    }
+};
+
+// ============================================================
+//  CUSTOM STDIN (ASYNC)
+// ============================================================
+Module.FS = {
+    init: function() {},
+    stdin: function() {
+        return new Promise((resolve) => {
+            if (state.stdinBuffer.length > 0) {
+                const data = state.stdinBuffer.shift();
+                resolve(data);
+                return;
+            }
+
+            state.isWaiting = true;
+            state.stdinCallback = (input) => {
+                state.isWaiting = false;
+                state.stdinCallback = null;
+                resolve(input);
+            };
+
+            setStatus('Waiting for input...', 'waiting');
+            inputField.disabled = false;
+            sendBtn.disabled = false;
+            inputField.focus();
+
+            // Show prompt in terminal
+            terminalPrompt();
+        });
+    }
+};
+
+// ============================================================
+//  PROGRAM CONTROL
+// ============================================================
+function startProgram() {
+    if (state.programRunning) return;
+
+    state.programRunning = true;
+    state.programDone = false;
+    state.needsRestart = false;
+    setStatus('Running...', 'running');
+
+    terminalWrite('▶ Starting grade calculator...', 'output');
+    terminalWrite('');
+
+    try {
+        Module._main();
+    } catch (e) {
+        if (e.message && e.message.includes('Asyncify')) {
+            // Normal - ASYNCIFY will handle suspension
+        } else {
+            console.error('Program error:', e);
+            terminalWrite('❌ Error: ' + e.message, 'output');
+            state.programRunning = false;
+            setStatus('Error', 'idle');
+        }
+    }
+}
+
+// ============================================================
+//  INPUT HANDLING
+// ============================================================
+function sendInput() {
+    const raw = inputField.value;
+    if (!raw && raw !== '') return;
+
+    inputField.value = '';
+    const input = raw + '\n';
+
+    // Echo input to terminal
+    terminalWrite(input.trim(), 'input');
+
+    if (state.isWaiting && state.stdinCallback) {
+        const cb = state.stdinCallback;
+        state.stdinCallback = null;
+        state.isWaiting = false;
+        cb(input);
+        setStatus('Processing...', 'running');
+    } else {
+        state.stdinBuffer.push(input);
+    }
+}
+
+// ============================================================
+//  RESET
+// ============================================================
+function resetProgram() {
+    if (state.programRunning && !state.programDone) {
+        terminalWrite('⚠️ Program is still running. Restart when complete.', 'output');
+        return;
+    }
+
+    // Reset state
+    state.stdinBuffer = [];
+    state.stdinCallback = null;
+    state.isWaiting = false;
+    state.programRunning = false;
+    state.programDone = false;
+    state.needsRestart = false;
+
+    // Clear terminal and reset
+    terminalClear();
+    terminalWrite('🔄 Restarting...', 'output');
+    terminalWrite('');
+
+    inputField.disabled = true;
+    sendBtn.disabled = true;
+    setStatus('Restarting...', 'idle');
+
+    // Small delay then restart
+    setTimeout(() => {
+        startProgram();
+    }, 300);
+}
+
+// ============================================================
+//  EVENT LISTENERS
+// ============================================================
+inputField.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendInput();
+    }
+});
+
+sendBtn.addEventListener('click', sendInput);
+
+resetBtn.addEventListener('click', resetProgram);
+
+// ============================================================
+//  LOAD WASM
+// ============================================================
+function loadWasm() {
+    setStatus('Loading WASM...', 'running');
+    terminalWrite('⏳ Loading WebAssembly module...', 'output');
+
+    const script = document.createElement('script');
+    script.src = 'master.js';
+    script.onerror = function() {
+        setStatus('Failed to load', 'idle');
+        terminalWrite('❌ Failed to load master.js. Make sure it exists.', 'output');
+    };
+    document.body.appendChild(script);
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    terminalWrite('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    loadWasm();
+});
+
+// Hook into program completion
+const origPrint = Module.print;
+Module.print = function(text) {
+    origPrint(text);
+    // Detect if program is done
+    if (text.includes('Grade') || text.includes('Failure')) {
+        state.programDone = true;
+        state.programRunning = false;
+        setStatus('Complete ✓', 'done');
+        terminalWrite('');
+        terminalWrite('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        terminalWrite('✅ Program finished. Click "Restart" to run again.', 'success');
+    }
+};
+
+// Override to keep print reference
+console.log('🚀 Grade Calculator ready');
+</script>
+
+</body>
+</html>
