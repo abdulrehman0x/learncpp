@@ -8,6 +8,7 @@ int main(){
     std::cin >> year;
     age = (2026 - year);
     std::cout <<"Your age is:"<< age;
+    return 0;
 
 
 
