@@ -25,6 +25,7 @@ int main (){
             std::cout << "Invalid day!!";
             break;
     }
+    return 0;
 
 
 }
