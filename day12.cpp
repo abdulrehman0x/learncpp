@@ -9,5 +9,6 @@ int main (){
     std::cin >> num2;
     avg = (num1 + num2 )/2.0;
     std::cout << "\n Average is = " << avg;
+    return 0;
 
 }
