@@ -8,7 +8,12 @@ int main (){
     std::cout << "\nEnter 2nd number: ";
     std::cin >> num2;
     avg = (num1 + num2 )/2.0;
-    std::cout << "\n Average is = " << avg;
+    if(num1 == 0 || num2 == 0){
+        std::cout << "You have entered an invalid number!!, Please try again!";
+    }
+    else{
+        std::cout << "\n Average is = " << avg;
+    }
     return 0;
 
 }
