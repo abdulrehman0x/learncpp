@@ -6,5 +6,6 @@ int main(){
     std::cin >> marks;
     std::string result =  (marks >=50)? "pass" : "failed";
     std::cout << result;
+    return 0;
 
 }
